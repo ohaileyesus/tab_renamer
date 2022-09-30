@@ -1,29 +1,70 @@
-const saveButton = document.getElementById("saveButton");
-const tabNameInput = document.getElementById("tabName");
+const saveButton = document.getElementById('saveButton')
+const deleteButton = document.getElementById('deleteButton')
+const tabNameInput = document.getElementById('tabName')
 
-async function getCurrentTab() {
-  let [tab] = await chrome.tabs.query({
-    active: true,
-    currentWindow: true,
-  });
+saveButton?.addEventListener('click', async () => {
+  if (!tabNameInput) return
 
-  return tab;
-}
+  const tabName = (tabNameInput as HTMLInputElement).value
+  if (!tabName) return
 
-saveButton?.addEventListener("click", async () => {
-  if (!tabNameInput) return;
+  const { id: tabId, url } = await getCurrentTab()
 
-  const tabName = (tabNameInput as HTMLInputElement).value;
-  if (!tabName) return;
+  if (!tabId) return
 
-  const tabId = (await getCurrentTab())?.id;
-  if (!tabId) return;
+  const existingTabNames = await chrome.storage.sync.get({ tabNames: {} })
+
+  if (url) {
+    const {
+      tabNames: { [url]: _tabNameToClear, ...otherTabNames },
+    } = existingTabNames
+
+    chrome.storage.sync.set({
+      tabNames: {
+        ...existingTabNames.tabNames,
+        [url]: tabName,
+      },
+    })
+  }
 
   chrome.scripting.executeScript({
     args: [tabName],
-    target: { tabId: tabId },
+    target: { tabId },
     func: (tabName) => {
-      document.title = tabName;
+      document.title = tabName
     },
-  });
-});
+  })
+})
+
+deleteButton?.addEventListener('click', async () => {
+  if (!tabNameInput) return
+
+  const { id: tabId, url } = await getCurrentTab()
+
+  if (!tabId) return
+
+  const existingTabNames = await chrome.storage.sync.get({ tabNames: {} })
+
+  if (url) {
+    const {
+      tabNames: { [url]: _tabNameToClear, ...otherTabNames },
+    } = existingTabNames
+
+    chrome.storage.sync.set({
+      tabNames: {
+        ...otherTabNames,
+      },
+    })
+
+    chrome.tabs.reload()
+  }
+})
+
+async function getCurrentTab() {
+  const [tab] = await chrome.tabs.query({
+    active: true,
+    currentWindow: true,
+  })
+
+  return tab
+}
