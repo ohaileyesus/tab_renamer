@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "rm -rf dist; mkdir dist; cp src/popup.html dist/popup.html; cp src/manifest.json dist/manifest.json; tsc"
+    "build": "rm -rf dist; mkdir dist; cp src/styles.css dist/styles.css; cp src/popup.html dist/popup.html; cp src/manifest.json dist/manifest.json; tsc"
   },
   "repository": {
     "type": "git",
