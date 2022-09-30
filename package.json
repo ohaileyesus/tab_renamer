@@ -1,0 +1,24 @@
+{
+  "name": "tab_renamer",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "tsc"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ohaileyesus/tab_renamer.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/ohaileyesus/tab_renamer/issues"
+  },
+  "homepage": "https://github.com/ohaileyesus/tab_renamer#readme",
+  "devDependencies": {
+    "typescript": "^4.8.4"
+  }
+}
