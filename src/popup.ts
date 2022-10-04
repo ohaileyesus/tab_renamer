@@ -1,31 +1,43 @@
-const saveButton = document.getElementById('saveButton')
-const deleteButton = document.getElementById('deleteButton')
-const tabNameInput = document.getElementById('tabName')
+const saveButton = document.querySelector<HTMLButtonElement>('#saveButton')
+const deleteButton = document.querySelector<HTMLButtonElement>('#deleteButton')
+const tabNameInput = document.querySelector<HTMLInputElement>('#tabName')
 
-saveButton?.addEventListener('click', async () => {
-  if (!tabNameInput) return
+if (!tabNameInput) throw new ReferenceError('tabNameInput does not exist')
+if (!saveButton) throw new ReferenceError('saveButton does not exist')
+if (!deleteButton) throw new ReferenceError('deleteButton does not exist')
 
-  const tabName = (tabNameInput as HTMLInputElement).value
-  if (!tabName) return
-
+const init = async () => {
   const { id: tabId, url } = await getCurrentTab()
-
-  if (!tabId) return
+  if (!url || !tabId) return
 
   const existingTabNames = await chrome.storage.sync.get({ tabNames: {} })
 
-  if (url) {
-    const {
-      tabNames: { [url]: _tabNameToClear, ...otherTabNames },
-    } = existingTabNames
+  const savedNameForCurrentTab = existingTabNames.tabNames[url]
 
-    chrome.storage.sync.set({
-      tabNames: {
-        ...existingTabNames.tabNames,
-        [url]: tabName,
-      },
-    })
+  if (savedNameForCurrentTab) {
+    tabNameInput.value = savedNameForCurrentTab
   }
+
+  tabNameInput.focus()
+}
+
+init()
+
+saveButton.addEventListener('click', async () => {
+  const tabName = tabNameInput.value
+  if (!tabName) return
+
+  const { id: tabId, url } = await getCurrentTab()
+  if (!tabId || !url) return
+
+  const savedTabNames = await chrome.storage.sync.get({ tabNames: {} })
+
+  chrome.storage.sync.set({
+    tabNames: {
+      ...savedTabNames.tabNames,
+      [url]: tabName,
+    },
+  })
 
   chrome.scripting.executeScript({
     args: [tabName],
@@ -36,28 +48,25 @@ saveButton?.addEventListener('click', async () => {
   })
 })
 
-deleteButton?.addEventListener('click', async () => {
-  if (!tabNameInput) return
-
+deleteButton.addEventListener('click', async () => {
   const { id: tabId, url } = await getCurrentTab()
+  if (!tabId || !url) return
 
-  if (!tabId) return
+  const savedTabNames = await chrome.storage.sync.get({ tabNames: {} })
 
-  const existingTabNames = await chrome.storage.sync.get({ tabNames: {} })
+  const {
+    tabNames: { [url]: _tabNameToClear, ...otherTabNames },
+  } = savedTabNames
 
-  if (url) {
-    const {
-      tabNames: { [url]: _tabNameToClear, ...otherTabNames },
-    } = existingTabNames
+  chrome.storage.sync.set({
+    tabNames: {
+      ...otherTabNames,
+    },
+  })
 
-    chrome.storage.sync.set({
-      tabNames: {
-        ...otherTabNames,
-      },
-    })
+  tabNameInput.value = ''
 
-    chrome.tabs.reload()
-  }
+  chrome.tabs.reload()
 })
 
 async function getCurrentTab() {
