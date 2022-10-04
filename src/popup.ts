@@ -10,9 +10,8 @@ const init = async () => {
   const { id: tabId, url } = await getCurrentTab()
   if (!url || !tabId) return
 
-  const existingTabNames = await chrome.storage.sync.get({ tabNames: {} })
-
-  const savedNameForCurrentTab = existingTabNames.tabNames[url]
+  const savedTabNames = await chrome.storage.sync.get({ tabNames: {} })
+  const savedNameForCurrentTab = savedTabNames.tabNames[url]
 
   if (savedNameForCurrentTab) {
     tabNameInput.value = savedNameForCurrentTab
